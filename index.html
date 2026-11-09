@@ -450,9 +450,9 @@
   </button>
 </div>
 
-<!-- Direct HTML5 Audio Element for Reliable Playback Across Mobile & Desktop Browsers -->
-<audio id="weddingAudio" loop preload="auto" crossorigin="anonymous">
-  <source src="https://docs.google.com/uc?export=download&id=1QLitWFs4qosquV2gwOVP3Jnyfa5svSLS" type="audio/mpeg">
+<!-- Direct HTML5 Audio Element for Local MP3 Playback -->
+<audio id="weddingAudio" loop preload="auto">
+  <source src="wedding-music.mp3" type="audio/mpeg">
 </audio>
 
 <!-- Container for YouTube Iframe API Player Fallback -->
@@ -528,7 +528,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 11l9 6 9-6"/>
         </svg>
-        <span>Open Invitation</span>
+        <span>Buka Jemputan</span>
       </button>
 
     </div>
@@ -557,11 +557,11 @@
           </div>
 
           <!-- Invitation Header Text -->
-          <p class="text-[9px] font-body tracking-[0.3em] text-[#7A5C43] uppercase mb-1 font-semibold">
-            IN THE NAME OF ALLAH, THE MOST MERCIFUL
+          <p class="text-[9px] font-body tracking-[0.25em] text-[#7A5C43] uppercase mb-1 font-semibold">
+            DENGAN NAMA ALLAH YANG MAHA PENGASIH LAGI MAHA PENYAYANG
           </p>
-          <p class="text-[10px] font-body tracking-[0.2em] text-[#8C6239] uppercase mb-4">
-            TOGETHER WITH THEIR FAMILIES
+          <p class="text-[10px] font-body tracking-[0.18em] text-[#8C6239] uppercase mb-4">
+            BERSAMA KELUARGA KEDUA-DUA MEMPELAI
           </p>
 
           <!-- Couple Names -->
@@ -649,7 +649,7 @@
         
         <div class="text-center mb-2">
           <span class="text-[10px] font-body tracking-[0.35em] uppercase text-[#B8860B] font-semibold">Atur Cara Majlis</span>
-          <h2 class="section-title text-[#5C4028]">Save The Date</h2>
+          <h2 class="section-title text-[#5C4028]">Sebuah Tarikh, Sejuta Makna</h2>
           <div class="w-12 h-[1px] bg-gold/50 mx-auto mt-2"></div>
         </div>
 
@@ -674,7 +674,7 @@
           </p>
 
           <a href="https://maps.app.goo.gl/ryNRuFuHoP4C8rbz7" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-2.5 bg-[#8C6239] text-ivory rounded-xl text-xs uppercase tracking-wider font-semibold hover:bg-[#5C4028] transition-all shadow-lg active:scale-95 border border-white/40">
-            <span>📍 Open Google Maps</span>
+            <span>📍 Buka Google Maps</span>
           </a>
         </div>
 
@@ -908,43 +908,12 @@
 <script>
   // Guest Name from URL parameter (?to=Nama+Tamu)
   const params = new URLSearchParams(window.location.search);
-  const guestName = params.get("to") ? decodeURIComponent(params.get("to")).replace(/\+/g, " ") : "Tamu Undangan";
+  const guestName = params.get("to") ? decodeURIComponent(params.get("to")).replace(/\+/g, " ") : "Tetamu Undangan";
   document.getElementById("coverGuestName").textContent = guestName;
 
   // Audio State Management
-  let ytPlayer = null;
   let isPlaying = false;
-  let ytApiReady = false;
   const audioEl = document.getElementById("weddingAudio");
-
-  // Load YouTube Iframe API dynamically as fallback
-  (function loadYoutubeApi() {
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-  })();
-
-  function onYouTubeIframeAPIReady() {
-    ytPlayer = new YT.Player('ytPlayer', {
-      height: '1',
-      width: '1',
-      videoId: '8bWRU2ipOwA',
-      playerVars: {
-        'autoplay': 0,
-        'controls': 0,
-        'loop': 1,
-        'playlist': '8bWRU2ipOwA',
-        'playsinline': 1
-      },
-      events: {
-        'onReady': function(e) {
-          ytApiReady = true;
-          e.target.setVolume(100);
-        }
-      }
-    });
-  }
 
   // Open Invitation Action with Guaranteed Direct Sound Triggering
   function openInvitation() {
@@ -953,7 +922,7 @@
     
     document.getElementById("opening").scrollIntoView({ behavior: 'smooth' });
     
-    // Play sound on physical click gesture
+    // Force Unlock Audio Context and play immediately on user click gesture
     playMusic();
     initScrollReveal();
   }
@@ -969,7 +938,7 @@
       musicIconOff.classList.add("hidden");
     }
 
-    // Try HTML5 Audio First (Reliable on mobile Safari & Chrome with user gesture)
+    // Try HTML5 Audio First with Local MP3
     if (audioEl) {
       audioEl.volume = 0.8;
       audioEl.currentTime = 0;
@@ -978,21 +947,11 @@
         playPromise.then(() => {
           console.log("Direct HTML5 audio started playing successfully.");
         }).catch(err => {
-          console.warn("HTML5 audio autoplay blocked, trying stream fallback...", err);
-          // Retry with alternative direct stream link if initial element fails
-          audioEl.src = "https://docs.google.com/uc?export=download&id=1QLitWFs4qosquV2gwOVP3Jnyfa5svSLS";
+          console.warn("HTML5 audio autoplay blocked, retrying local playback...", err);
+          audioEl.src = "wedding-music.mp3";
           audioEl.play().catch(e => console.error("Audio playback error:", e));
         });
       }
-    }
-
-    // Also trigger YouTube player if ready
-    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-      try {
-        ytPlayer.unMute();
-        ytPlayer.setVolume(100);
-        ytPlayer.playVideo();
-      } catch(e) {}
     }
   }
 
@@ -1004,9 +963,6 @@
     if (isPlaying) {
       if (audioEl) {
         audioEl.pause();
-      }
-      if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-        try { ytPlayer.pauseVideo(); } catch(e){}
       }
       soundwave.classList.add("hidden");
       musicIconOff.classList.remove("hidden");
@@ -1070,6 +1026,37 @@
   // Google Script URL & WhatsApp Direct Integration
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXhE6l90Pmf1CYmFn37r7xclBimRXI_M_VDeNsEcKRoTzdihaGWqRrK5P8xe7Ifcuj2g/exec";
   const NOMBOR_PENGANTIN = "60137130646";
+
+  // Fungsi Memuatkan Senarai Ucapan Dari Google Sheets Secara Automatik
+  function loadWishesFromGoogleSheets() {
+    fetch(GOOGLE_SCRIPT_URL + "?action=read")
+      .then(response => response.json())
+      .then(data => {
+        if (data && Array.isArray(data.wishes)) {
+          const wishesBoard = document.getElementById("wishesBoard");
+          if (!wishesBoard) return;
+          
+          // Kekalkan kad ucapan pertama (Keluarga) dan tambah ucapan dari Google Sheets
+          const defaultWish = wishesBoard.firstElementChild;
+          wishesBoard.innerHTML = '';
+          if (defaultWish) wishesBoard.appendChild(defaultWish);
+
+          data.wishes.reverse().forEach(item => {
+            const wishCard = document.createElement("div");
+            wishCard.className = "bg-ivory p-3 rounded-lg border border-gold/20 animate-fade-in";
+            wishCard.innerHTML = `
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-sage-dark">${escapeHtml(item.name || 'Tetamu')}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full ${item.status === 'Hadir' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${escapeHtml(item.status || 'Hadir')} (${escapeHtml(item.guests || '1')} Pax)</span>
+              </div>
+              <p class="text-xs text-sage-soft mt-1">${escapeHtml(item.wishes || '')}</p>
+            `;
+            wishesBoard.appendChild(wishCard);
+          });
+        }
+      })
+      .catch(err => console.log("Google Sheets wishes read status:", err));
+  }
 
   // RSVP Form Handler (Sends data to Google Sheets & Triggers WhatsApp Message)
   function handleRSVP(e) {
@@ -1259,6 +1246,7 @@
     initCountdown();
     initSnowCanvas();
     updateGalUI();
+    loadWishesFromGoogleSheets();
   });
 </script>
 </body>
